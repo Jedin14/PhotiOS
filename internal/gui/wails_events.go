@@ -21,4 +21,14 @@ func init() {
 	application.RegisterEvent[int64]("uploadTotalBytesDelta")
 	application.RegisterEvent[core.FilesDroppedEvent]("files-dropped")
 	application.RegisterEvent[core.StartUploadEvent]("startUpload")
+
+	// iPhone events
+	application.RegisterEvent[core.IPhoneStatus]("iphone-connected")
+	application.RegisterEvent[application.Void]("iphone-disconnected")
+	application.RegisterEvent[core.IPhoneScanProgress]("iphone-scan-progress")
+	application.RegisterEvent[core.IPhoneScanResult]("iphone-scan-complete")
+	application.RegisterEvent[application.Void]("iphone-scan-request")
+	application.RegisterEvent[application.Void]("iphone-scan-cancel")
+	application.RegisterEvent[core.StartUploadEvent]("startIPhoneUpload")
 }
+

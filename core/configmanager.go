@@ -424,7 +424,9 @@ func extractTokenBindingAliasFromADB(email string) (string, error) {
 	var failures []string
 	var reachableRoot bool
 	for _, device := range devices {
-		_ = exec.Command("adb", "-s", device, "root").Run()
+		adbCmd := exec.Command("adb", "-s", device, "root")
+		hideWindow(adbCmd)
+		_ = adbCmd.Run()
 
 		alias, rooted, err := readTokenBindingAliasFromDevice(device, query)
 		if rooted {
@@ -477,7 +479,9 @@ func readTokenBindingAliasFromDevice(device, query string) (alias string, rooted
 }
 
 func listADBDevices() ([]string, error) {
-	out, err := exec.Command("adb", "devices").CombinedOutput()
+	cmd := exec.Command("adb", "devices")
+	hideWindow(cmd)
+	out, err := cmd.CombinedOutput()
 	if err != nil {
 		return nil, fmt.Errorf("failed to list adb devices: %s", cleanADBError(string(out)))
 	}
@@ -540,6 +544,7 @@ func pullAccountsDB(device string) (string, func(), error) {
 // that would corrupt the binary database.
 func streamDeviceFile(device, remotePath, localPath string) error {
 	cmd := exec.Command("adb", "-s", device, "exec-out", "su", "-c", fmt.Sprintf("cat %q", remotePath))
+	hideWindow(cmd)
 	var stdout, stderr bytes.Buffer
 	cmd.Stdout = &stdout
 	cmd.Stderr = &stderr

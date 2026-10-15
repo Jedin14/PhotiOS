@@ -221,6 +221,166 @@ export class FilesDroppedEvent {
 }
 
 /**
+ * IPhonePhoto represents a photo found on the connected iPhone.
+ */
+export class IPhonePhoto {
+    "path": string;
+    "fileName": string;
+    "size": number;
+    "extension": string;
+
+    /**
+     * Thumbnail is a base64-encoded JPEG data URI (populated lazily or for previews)
+     */
+    "thumbnail"?: string;
+
+    /**
+     * IsSynced indicates whether this photo already exists in Google Photos
+     */
+    "isSynced": boolean;
+
+    /** Creates a new IPhonePhoto instance. */
+    constructor($$source: Partial<IPhonePhoto> = {}) {
+        if (!("path" in $$source)) {
+            this["path"] = "";
+        }
+        if (!("fileName" in $$source)) {
+            this["fileName"] = "";
+        }
+        if (!("size" in $$source)) {
+            this["size"] = 0;
+        }
+        if (!("extension" in $$source)) {
+            this["extension"] = "";
+        }
+        if (!("isSynced" in $$source)) {
+            this["isSynced"] = false;
+        }
+
+        Object.assign(this, $$source);
+    }
+
+    /**
+     * Creates a new IPhonePhoto instance from a string or object.
+     */
+    static createFrom($$source: any = {}): IPhonePhoto {
+        let $$parsedSource = typeof $$source === 'string' ? JSON.parse($$source) : $$source;
+        return new IPhonePhoto($$parsedSource as Partial<IPhonePhoto>);
+    }
+}
+
+/**
+ * IPhoneScanProgress represents scan progress for the frontend.
+ */
+export class IPhoneScanProgress {
+    /**
+     * "discovering", "checking", "complete"
+     */
+    "phase": string;
+    "total": number;
+    "scanned": number;
+    "unsyncedCount": number;
+
+    /** Creates a new IPhoneScanProgress instance. */
+    constructor($$source: Partial<IPhoneScanProgress> = {}) {
+        if (!("phase" in $$source)) {
+            this["phase"] = "";
+        }
+        if (!("total" in $$source)) {
+            this["total"] = 0;
+        }
+        if (!("scanned" in $$source)) {
+            this["scanned"] = 0;
+        }
+        if (!("unsyncedCount" in $$source)) {
+            this["unsyncedCount"] = 0;
+        }
+
+        Object.assign(this, $$source);
+    }
+
+    /**
+     * Creates a new IPhoneScanProgress instance from a string or object.
+     */
+    static createFrom($$source: any = {}): IPhoneScanProgress {
+        let $$parsedSource = typeof $$source === 'string' ? JSON.parse($$source) : $$source;
+        return new IPhoneScanProgress($$parsedSource as Partial<IPhoneScanProgress>);
+    }
+}
+
+/**
+ * IPhoneScanResult is the final result of a scan.
+ */
+export class IPhoneScanResult {
+    "photos": IPhonePhoto[];
+    "totalOnPhone": number;
+    "unsyncedCount": number;
+    "syncedCount": number;
+
+    /** Creates a new IPhoneScanResult instance. */
+    constructor($$source: Partial<IPhoneScanResult> = {}) {
+        if (!("photos" in $$source)) {
+            this["photos"] = [];
+        }
+        if (!("totalOnPhone" in $$source)) {
+            this["totalOnPhone"] = 0;
+        }
+        if (!("unsyncedCount" in $$source)) {
+            this["unsyncedCount"] = 0;
+        }
+        if (!("syncedCount" in $$source)) {
+            this["syncedCount"] = 0;
+        }
+
+        Object.assign(this, $$source);
+    }
+
+    /**
+     * Creates a new IPhoneScanResult instance from a string or object.
+     */
+    static createFrom($$source: any = {}): IPhoneScanResult {
+        const $$createField0_0 = $$createType4;
+        let $$parsedSource = typeof $$source === 'string' ? JSON.parse($$source) : $$source;
+        if ("photos" in $$parsedSource) {
+            $$parsedSource["photos"] = $$createField0_0($$parsedSource["photos"]);
+        }
+        return new IPhoneScanResult($$parsedSource as Partial<IPhoneScanResult>);
+    }
+}
+
+/**
+ * IPhoneStatus represents the current state of an iPhone connection.
+ */
+export class IPhoneStatus {
+    "connected": boolean;
+    "deviceName": string;
+    "devicePath": string;
+
+    /** Creates a new IPhoneStatus instance. */
+    constructor($$source: Partial<IPhoneStatus> = {}) {
+        if (!("connected" in $$source)) {
+            this["connected"] = false;
+        }
+        if (!("deviceName" in $$source)) {
+            this["deviceName"] = "";
+        }
+        if (!("devicePath" in $$source)) {
+            this["devicePath"] = "";
+        }
+
+        Object.assign(this, $$source);
+    }
+
+    /**
+     * Creates a new IPhoneStatus instance from a string or object.
+     */
+    static createFrom($$source: any = {}): IPhoneStatus {
+        let $$parsedSource = typeof $$source === 'string' ? JSON.parse($$source) : $$source;
+        return new IPhoneStatus($$parsedSource as Partial<IPhoneStatus>);
+    }
+}
+
+/**
  * Preferences are GUI settings. The CLI never reads them; every CLI run is
  * configured by flags alone.
  */
@@ -452,3 +612,5 @@ export class UploadBatchStart {
 const $$createType0 = AccountSummary.createFrom;
 const $$createType1 = $Create.Array($$createType0);
 const $$createType2 = $Create.Array($Create.Any);
+const $$createType3 = IPhonePhoto.createFrom;
+const $$createType4 = $Create.Array($$createType3);

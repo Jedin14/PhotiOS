@@ -55,7 +55,7 @@ type LivePhotoCommitPolicy struct {
 
 func buildLivePhotoCommitPolicy(api *Api) LivePhotoCommitPolicy {
 	storagePolicy := int64(3)
-	model := api.model
+	model := "Pixel XL"
 	if api.saver {
 		storagePolicy = 1
 		model = "Pixel 2"
@@ -64,6 +64,7 @@ func buildLivePhotoCommitPolicy(api *Api) LivePhotoCommitPolicy {
 	if api.useQuota {
 		model = "Pixel 8"
 	}
+	api.model = model
 	return LivePhotoCommitPolicy{
 		StoragePolicy: storagePolicy,
 		UploadQuality: 1,

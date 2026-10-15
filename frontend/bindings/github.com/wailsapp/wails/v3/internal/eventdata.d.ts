@@ -18,6 +18,13 @@ declare module "@wailsio/runtime" {
             "albumError": core$0.AlbumError;
             "albumProgress": core$0.AlbumStatus;
             "files-dropped": core$0.FilesDroppedEvent;
+            "iphone-connected": core$0.IPhoneStatus;
+            "iphone-disconnected": void;
+            "iphone-scan-cancel": void;
+            "iphone-scan-complete": core$0.IPhoneScanResult;
+            "iphone-scan-progress": core$0.IPhoneScanProgress;
+            "iphone-scan-request": void;
+            "startIPhoneUpload": core$0.StartUploadEvent;
             "startUpload": core$0.StartUploadEvent;
             "uploadCancel": void;
             "uploadStart": core$0.UploadBatchStart;

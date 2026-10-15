@@ -39,6 +39,12 @@ func uploadLivePhotoWithCallback(
 	if err != nil {
 		return "", false, fmt.Errorf("stat Live Photo video: %w", err)
 	}
+	if !IsValidMediaFile(pair.PhotoPath) {
+		return "", false, fmt.Errorf("invalid or corrupt still image: %s", filepath.Base(pair.PhotoPath))
+	}
+	if !IsValidMediaFile(pair.VideoPath) {
+		return "", false, fmt.Errorf("invalid or corrupt video file: %s", filepath.Base(pair.VideoPath))
+	}
 	totalBytes := photoInfo.Size() + videoInfo.Size()
 	displayName := filepath.Base(pair.PhotoPath) + " + " + filepath.Base(pair.VideoPath)
 	reporter.ThreadStatus(ThreadStatus{
@@ -74,6 +80,7 @@ func uploadLivePhotoWithCallback(
 		return "", false, fmt.Errorf("check Live Photo video deduplication: %w", videoCheckErr)
 	}
 	if photoRemoteKey != "" {
+		AddHashToSyncCache(photoSHA1)
 		if options.UpdateExistingPhotosToLive {
 			reporter.TotalBytesDelta(-photoInfo.Size())
 			mediaKey, err := reconcileExistingLivePhoto(
@@ -104,6 +111,7 @@ func uploadLivePhotoWithCallback(
 	// The VideoOriginal direction has not been recovered. A standalone remote MOV
 	// must not be combined with a newly uploaded still using the Phodeo request.
 	if videoRemoteKey != "" {
+		AddHashToSyncCache(videoSHA1)
 		reporter.TotalBytesDelta(-totalBytes)
 		reporter.ThreadStatus(ThreadStatus{
 			WorkerID: workerID,
@@ -150,11 +158,30 @@ func uploadLivePhotoWithCallback(
 		UploadDeviceInfo: options.Policy.UploadDeviceInfo,
 	})
 	if err != nil {
+		// If commit rejected due to duplicate or empty media key, check if already in library
+		if existingKey, checkErr := api.FindRemoteMediaByHash(photoSHA1); checkErr == nil && len(existingKey) > 0 {
+			AddHashToSyncCache(photoSHA1)
+			AddHashToSyncCache(videoSHA1)
+			reporter.ThreadStatus(ThreadStatus{
+				WorkerID: workerID,
+				Status:   "completed",
+				FilePath: pair.PhotoPath,
+				FileName: displayName,
+				Message:  "Already in library",
+			})
+			if options.DeleteFromHost {
+				_ = removeLivePhotoFiles(pair)
+			}
+			return existingKey, false, nil
+		}
 		return "", false, fmt.Errorf("commit Live Photo: %w", err)
 	}
 	if mediaKey == "" {
 		return "", false, fmt.Errorf("Live Photo media key not received")
 	}
+
+	AddHashToSyncCache(photoSHA1)
+	AddHashToSyncCache(videoSHA1)
 
 	if options.DeleteFromHost {
 		if err := removeLivePhotoFiles(pair); err != nil {
@@ -231,6 +258,8 @@ func reconcileExistingLivePhoto(
 	if mediaKey == "" {
 		return "", fmt.Errorf("updated Live Photo media key not received")
 	}
+	AddHashToSyncCache(photoSHA1)
+	AddHashToSyncCache(videoSHA1)
 	if options.DeleteFromHost {
 		if err := removeLivePhotoFiles(pair); err != nil {
 			return mediaKey, err

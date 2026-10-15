@@ -9,7 +9,7 @@ import {
     TooltipContent,
     TooltipTrigger,
 } from '@/components/ui/tooltip'
-import { Info } from '@lucide/vue'
+import { Info, Sparkles } from '@lucide/vue'
 
 import {
     NumberField,
@@ -18,6 +18,7 @@ import {
     NumberFieldIncrement,
     NumberFieldInput,
 } from '@/components/ui/number-field'
+import SupportButton from '@/components/SupportButton.vue'
 
 interface Settings {
     proxy: string
@@ -153,6 +154,13 @@ watch(() => settings.value.uploadThreads, async (newValue) => {
 
 <template>
   <div class="flex flex-col gap-2.5 m-4">
+    <div class="flex items-center justify-between pb-2 border-b border-white/8 mb-1 select-none">
+      <div class="flex items-center gap-2">
+        <h2 class="text-sm font-bold tracking-tight text-foreground">PhotiOS Settings</h2>
+        <span class="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-400 border border-emerald-500/20">Unlimited</span>
+      </div>
+      <span class="text-[11px] text-muted-foreground/60">v1.0</span>
+    </div>
     <NumberField
       v-model="settings.uploadThreads"
       class="flex items-center justify-between"
@@ -171,24 +179,73 @@ watch(() => settings.value.uploadThreads, async (newValue) => {
       </NumberFieldContent>
     </NumberField>
     <div class="flex items-center justify-between">
-      <Label
-        for="use-quota"
-        class="size-full cursor-pointer"
-      >Use Quota</Label>
+      <div class="flex min-w-0 flex-1 cursor-pointer items-center gap-1.5">
+        <Label
+          for="use-quota"
+          class="cursor-pointer"
+        >Use Quota</Label>
+        <Tooltip>
+          <TooltipTrigger as-child>
+            <button
+              type="button"
+              class="inline-flex size-5 shrink-0 cursor-help items-center justify-center rounded-full text-muted-foreground hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+              aria-label="About Use Quota"
+            >
+              <Info class="size-3.5" />
+            </button>
+          </TooltipTrigger>
+          <TooltipContent class="max-w-72">
+            When OFF (default), uploads spoof a Google Pixel XL to provide unlimited backup that uses 0 bytes of Google Drive / Google One storage. Turn ON only if you want uploads to count against your account quota.
+          </TooltipContent>
+        </Tooltip>
+      </div>
       <Switch
         id="use-quota"
         v-model="settings.useQuota"
       />
     </div>
     <div class="flex items-center justify-between">
-      <Label
-        for="saver-mode"
-        class="size-full cursor-pointer"
-      >Storage Saver Quality</Label>
+      <div class="flex min-w-0 flex-1 cursor-pointer items-center gap-1.5">
+        <Label
+          for="saver-mode"
+          class="cursor-pointer"
+        >Storage Saver Quality</Label>
+        <Tooltip>
+          <TooltipTrigger as-child>
+            <button
+              type="button"
+              class="inline-flex size-5 shrink-0 cursor-help items-center justify-center rounded-full text-muted-foreground hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+              aria-label="About Storage Saver Quality"
+            >
+              <Info class="size-3.5" />
+            </button>
+          </TooltipTrigger>
+          <TooltipContent class="max-w-72">
+            When OFF (default), photos and videos upload in their full Original Quality without compression (Pixel XL unlimited). When ON, uploads compress to Storage Saver quality (Pixel 2 spoofing).
+          </TooltipContent>
+        </Tooltip>
+      </div>
       <Switch
         id="saver-mode"
         v-model="settings.saver"
       />
+    </div>
+
+    <!-- Storage / Quota status callout -->
+    <div 
+      class="rounded-lg p-2.5 text-xs flex items-center gap-2 select-none my-1"
+      :class="!settings.useQuota ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-amber-500/10 text-amber-400 border border-amber-500/20'"
+    >
+      <Sparkles v-if="!settings.useQuota" class="size-4 shrink-0 text-emerald-400" />
+      <span v-if="!settings.useQuota && !settings.saver">
+        <strong>Unlimited Original Quality:</strong> Uses 0 bytes of Google Drive / Google One storage (Pixel XL spoofing).
+      </span>
+      <span v-else-if="!settings.useQuota && settings.saver">
+        <strong>Unlimited Storage Saver:</strong> Compressed, uses 0 bytes of Google Drive storage (Pixel 2 spoofing).
+      </span>
+      <span v-else>
+        <strong>Quota Enabled:</strong> Uploads will count against your Google Drive space.
+      </span>
     </div>
     <div class="flex items-center justify-between">
       <Label
@@ -364,6 +421,14 @@ watch(() => settings.value.uploadThreads, async (newValue) => {
         type="text"
         placeholder="Proxy URL (optional)"
       />
+    </div>
+
+    <!-- Support Developer & Open Source Attribution -->
+    <div class="pt-3 pb-1 flex flex-col items-center gap-2 border-t border-white/6 mt-2 select-none">
+      <SupportButton variant="full" />
+      <p class="text-[10px] text-muted-foreground/45 hover:text-muted-foreground/75 transition-colors">
+        PhotiOS • Based on gotohp engine • Open source under MIT License
+      </p>
     </div>
   </div>
 </template>

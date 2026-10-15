@@ -18,9 +18,13 @@ function configure() {
         "albumError": $$createType3,
         "albumProgress": $$createType2,
         "files-dropped": $$createType4,
-        "startUpload": $$createType5,
-        "uploadStart": $$createType6,
-        "uploadWarning": $$createType7,
+        "iphone-connected": $$createType5,
+        "iphone-scan-complete": $$createType6,
+        "iphone-scan-progress": $$createType7,
+        "startIPhoneUpload": $$createType8,
+        "startUpload": $$createType8,
+        "uploadStart": $$createType9,
+        "uploadWarning": $$createType10,
     }));
 }
 
@@ -30,8 +34,11 @@ const $$createType1 = core$0.ThreadStatus.createFrom;
 const $$createType2 = core$0.AlbumStatus.createFrom;
 const $$createType3 = core$0.AlbumError.createFrom;
 const $$createType4 = core$0.FilesDroppedEvent.createFrom;
-const $$createType5 = core$0.StartUploadEvent.createFrom;
-const $$createType6 = core$0.UploadBatchStart.createFrom;
-const $$createType7 = core$0.PreflightWarning.createFrom;
+const $$createType5 = core$0.IPhoneStatus.createFrom;
+const $$createType6 = core$0.IPhoneScanResult.createFrom;
+const $$createType7 = core$0.IPhoneScanProgress.createFrom;
+const $$createType8 = core$0.StartUploadEvent.createFrom;
+const $$createType9 = core$0.UploadBatchStart.createFrom;
+const $$createType10 = core$0.PreflightWarning.createFrom;
 
 configure();

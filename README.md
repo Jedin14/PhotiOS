@@ -1,19 +1,26 @@
-# gotohp
+# PhotiOS (Google Photos for iOS) — Unlimited Storage
 
 ![demo](readme_assets/app_demo.webp)
 
-Unofficial Google Photos Desktop GUI Client
+Desktop Client for Google Photos with automatic iPhone USB detection, Apple Live Photos pairing, and 0-quota unlimited original quality backup.
 
-- Unlimited uploads (can be disabled)
+> *Open Source notice*: PhotiOS is based on and extends the open-source [gotohp](https://github.com/xob0t/gotohp) engine under the MIT License.
+
+- **Apple iPhone USB Auto-Detection**: Automatically detects your connected iPhone, scans for unsynced photos & videos, and stages them for upload
+- **Native HEIC & MOV Previews**: High-performance thumbnail generation and full lightbox preview for Apple media
+- **Album Organization**: Upload directly or organize into New Albums, Existing Albums, or Auto-Monthly albums
+- **Apple Live Photos**: Pairs `.HEIC` + `.MOV` files into native Google Photos Live Photos
+- **Unlimited uploads**: Spoofs original Pixel XL to upload in full Original Quality with 0 bytes Google Drive quota used (can be toggled)
+- **Emil Kowalski-inspired UX**: Tactile micro-interactions, smooth cubic-bezier easing, and glassmorphic aesthetics
 - Drag-and-drop file upload interface
 - Credential management
 - Real-time upload progress tracking
 - Configurable upload threads
 - Individual files or directories uploads, with optional recursive scanning
 - Skips files already present in your account
-- CLI mode
-- Configurable, persistent upload settings (stored in "%system config path%/gotohp/gotohp.config")  
-   You can force local config by creating empty gotohp.config next to executable.
+- Configurable, persistent upload settings
+
+> 📖 **Full Documentation**: See [USER_GUIDE.md](USER_GUIDE.md) for step-by-step setup, album selection guide, and zero-quota details.
 
 ## [Download](https://github.com/xob0t/gotohp/releases/latest)
 
@@ -121,3 +128,18 @@ From the CLI, open the same page yourself and run `gotohp-cli creds add "<oauth_
 
 Follow official wails3 guide
 [https://v3.wails.io/getting-started/installation/](https://v3.wails.io/getting-started/installation/)
+
+## Support the Project
+
+If PhotiOS saves you storage space and time, consider supporting development:
+
+[![Support via PayPal](https://img.shields.io/badge/Donate-PayPal-00457C?style=for-the-badge&logo=paypal&logoColor=white)](https://paypal.me/jedinmathew)
+
+* PayPal: **[paypal.me/jedinmathew](https://paypal.me/jedinmathew)**
+
+---
+
+## License & Attribution
+
+PhotiOS is licensed under the [MIT License](LICENSE).  
+PhotiOS incorporates, builds upon, and extends the open-source [gotohp](https://github.com/xob0t/gotohp) project by [xob0t](https://github.com/xob0t), used under the terms of the MIT License. Special thanks to the gotohp contributors.

@@ -20,13 +20,13 @@ import (
 //go:embed all:frontend/dist
 var assets embed.FS
 
-var title = "gotohp v" + getAppVersion()
+var title = "PhotiOS (Google Photos for iOS) — Unlimited Storage"
 
 func main() {
 	// Run the CLI when the arguments name one of its commands; otherwise start the GUI.
 	if cli.IsCLIInvocation(os.Args[1:]) {
 		os.Exit(cli.Run(os.Args[1:], cli.Info{
-			ExecutableName: "gotohp",
+			ExecutableName: "PhotiOS",
 			HasGUI:         true,
 			Version:        getAppVersion(),
 		}))
@@ -39,9 +39,13 @@ func runGUI() {
 	normalizeFrontendDevServerURL()
 
 	configManager := &core.ConfigManager{}
+
+	// Create iPhone service with event emitter (will be set after app is created)
+	var iphoneService *core.IPhoneService
+
 	wailsApp := application.New(application.Options{
-		Name:        "com.xob0t.gotohp",
-		Description: "Google Photos unofficial client",
+		Name:        "com.photios.app",
+		Description: "PhotiOS (Google Photos for iOS) - Unlimited Storage",
 		Services: []application.Service{
 			application.NewService(configManager),
 		},
@@ -53,13 +57,21 @@ func runGUI() {
 		},
 	})
 
+	// Initialize iPhone service with event emitter
+	iphoneService = core.NewIPhoneService(configManager, wailsApp.Logger, func(name string, data interface{}) {
+		wailsApp.Event.Emit(name, data)
+	})
+
+	// Register iPhone service with Wails
+	wailsApp.RegisterService(application.NewService(iphoneService))
+
 	window := wailsApp.Window.NewWithOptions(application.WebviewWindowOptions{
 		Title:               title,
 		Frameless:           false,
-		Width:               400,
-		Height:              600,
+		Width:               480,
+		Height:              700,
 		EnableFileDrop:      true,
-		DisableResize:       true,
+		DisableResize:       false,
 		MaximiseButtonState: application.ButtonDisabled,
 		BackgroundType:      application.BackgroundTypeTranslucent,
 		Mac: application.MacWindow{
@@ -72,9 +84,39 @@ func runGUI() {
 
 	uploadManager := core.NewUploadManager(gui.NewWailsReporter(wailsApp), wailsApp.Logger)
 
+	// Start iPhone detection
+	iphoneService.StartDetection()
+
 	// Listen for upload cancel event
 	wailsApp.Event.On("uploadCancel", func(e *application.CustomEvent) {
 		uploadManager.Cancel()
+	})
+
+	// Listen for iPhone scan request
+	wailsApp.Event.On("iphone-scan-request", func(e *application.CustomEvent) {
+		wailsApp.Logger.Info("iPhone scan requested")
+		if err := iphoneService.ScanPhotos(); err != nil {
+			wailsApp.Logger.Error("Failed to start iPhone scan", "error", err)
+		}
+	})
+
+	// Listen for iPhone scan cancel
+	wailsApp.Event.On("iphone-scan-cancel", func(e *application.CustomEvent) {
+		iphoneService.CancelScan()
+	})
+
+	// Listen for iPhone upload request
+	wailsApp.Event.On("startIPhoneUpload", func(e *application.CustomEvent) {
+		var paths []string
+		if data, ok := e.Data.(core.StartUploadEvent); ok && len(data.Files) > 0 {
+			paths = iphoneService.GetSelectedPhotoPaths(data.Files)
+		} else {
+			paths = iphoneService.GetUnsyncedPhotoPaths()
+		}
+		wailsApp.Logger.Info("Starting iPhone upload", "fileCount", len(paths))
+		if len(paths) > 0 {
+			uploadManager.Upload(paths, configManager.SessionUploadOptions())
+		}
 	})
 
 	window.OnWindowEvent(events.Common.WindowFilesDropped, func(event *application.WindowEvent) {
@@ -108,8 +150,10 @@ func runGUI() {
 
 	err := wailsApp.Run()
 	if err != nil {
+		iphoneService.StopDetection()
 		log.Fatal(err)
 	}
+	iphoneService.StopDetection()
 }
 
 func normalizeFrontendDevServerURL() {

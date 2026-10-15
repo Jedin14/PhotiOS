@@ -518,6 +518,7 @@ func (a *Api) CommitUpload(
 	}
 
 	var qualityVal int64 = 3
+	a.model = "Pixel XL"
 	if a.saver {
 		qualityVal = 1
 		a.model = "Pixel 2"

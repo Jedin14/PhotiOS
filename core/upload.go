@@ -542,12 +542,20 @@ func uploadSingleFile(ctx context.Context, api *Api, filePath string, opts Uploa
 	fileName := filepath.Base(filePath)
 	mediakey := ""
 
+	fileInfo, err := os.Stat(filePath)
+	if err != nil {
+		return "", fmt.Errorf("error getting file info: %w", err)
+	}
+	if fileInfo.Size() == 0 {
+		return "", fmt.Errorf("file is empty (0 bytes), cannot upload: %s", fileName)
+	}
+	if !IsValidMediaFile(filePath) {
+		return "", fmt.Errorf("file is corrupted or an unsupported metadata stub: %s", fileName)
+	}
+
 	// Determine the timestamp to use for the upload.
 	// Default to file mtime, but allow filename-based timestamp to take precedence if enabled.
-	var uploadTimestamp int64
-	if info, err := os.Stat(filePath); err == nil {
-		uploadTimestamp = info.ModTime().Unix()
-	}
+	uploadTimestamp := fileInfo.ModTime().Unix()
 	if opts.SetDateFromFilename {
 		if t, ok := parseTimestampFromFilename(filePath); ok {
 			uploadTimestamp = t.Unix()
@@ -592,6 +600,7 @@ func uploadSingleFile(ctx context.Context, api *Api, filePath string, opts Uploa
 			})
 		}
 		if len(mediakey) > 0 {
+			AddHashToSyncCache(sha1_hash_bytes)
 			reporter.ThreadStatus(ThreadStatus{
 				WorkerID: workerID,
 				Status:   "completed",
@@ -606,11 +615,6 @@ func uploadSingleFile(ctx context.Context, api *Api, filePath string, opts Uploa
 			}
 			return mediakey, nil
 		}
-	}
-
-	fileInfo, err := os.Stat(filePath)
-	if err != nil {
-		return "", fmt.Errorf("error getting file info: %w", err)
 	}
 
 	// Stage 3: Uploading
@@ -668,12 +672,29 @@ func uploadSingleFile(ctx context.Context, api *Api, filePath string, opts Uploa
 
 	mediaKey, err := api.CommitUpload(commitToken, fileInfo.Name(), sha1_hash_bytes, uploadTimestamp)
 	if err != nil {
+		// If Google Photos rejected the commit with empty media key, check if the item already exists in library
+		if existingKey, checkErr := api.FindRemoteMediaByHash(sha1_hash_bytes); checkErr == nil && len(existingKey) > 0 {
+			AddHashToSyncCache(sha1_hash_bytes)
+			reporter.ThreadStatus(ThreadStatus{
+				WorkerID: workerID,
+				Status:   "completed",
+				FilePath: filePath,
+				FileName: fileName,
+				Message:  "Already in library",
+			})
+			if opts.DeleteFromHost {
+				_ = os.Remove(filePath)
+			}
+			return existingKey, nil
+		}
 		return "", fmt.Errorf("error committing file: %w", err)
 	}
 
 	if len(mediaKey) == 0 {
 		return "", fmt.Errorf("media key not received")
 	}
+
+	AddHashToSyncCache(sha1_hash_bytes)
 
 	if opts.DeleteFromHost {
 		if err := os.Remove(filePath); err != nil {
